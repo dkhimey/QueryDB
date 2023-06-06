@@ -47,29 +47,42 @@ char* execute_DbOperator(DbOperator* query) {
         return "165";
     }
 
+    Status create_status;
     switch (query->type) {
         case CREATE:
 
             switch (query->operator_fields.create_operator.create_type) {
                 case _DB:
-                    if (create_db(query->operator_fields.create_operator.name).code == OK) {
-                        return "Created DB";
-                    } else {
+                    if (create_db(query->operator_fields.create_operator.name).code != OK) {
                         return "Failed to create DB";
                         // TODO: memory leak from unfreed query
                     }
+                    cs165_log(stdout, "created DB.");
+                    break;
 
                 case _TABLE:
-                    Status create_status;
                     create_table(query->operator_fields.create_operator.db, 
                         query->operator_fields.create_operator.name, 
                         query->operator_fields.create_operator.col_count, 
                         &create_status);
                     if (create_status.code != OK) {
-                        cs165_log(stdout, "adding a table failed.");
                         return "Failed to create table";
+                        // TODO: memory leak from unfreed query
                     }
-                    return "Created table";
+                    cs165_log(stdout, "created table.");
+                    break;
+
+                case _COLUMN:
+                    create_column(query->operator_fields.create_operator.table, 
+                                  query->operator_fields.create_operator.name,
+                                  query->operator_fields.create_operator.sorted,
+                                  &create_status);
+                    if (create_status.code != OK) {
+                        return "Failed to create column";
+                        // TODO: memory leak from unfreed query
+                    }
+                    cs165_log(stdout, "created column.");
+                    break;
 
                 default:
                     break;

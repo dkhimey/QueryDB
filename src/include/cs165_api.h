@@ -106,6 +106,8 @@ typedef enum StatusCode {
   OK,
   /* There was an error with the call. */
   ERROR,
+  /* System is out of memory */
+  NOMEM
 } StatusCode;
 
 // status declares an error code and associated message
@@ -216,6 +218,7 @@ typedef struct CreateOperator {
     Db* db;
     Table* table;
     int col_count;
+    bool sorted;
 } CreateOperator;
 
 /*
