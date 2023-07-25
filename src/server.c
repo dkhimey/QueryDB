@@ -90,6 +90,23 @@ char* execute_DbOperator(DbOperator* query) {
 
             break;
         
+        case INSERT:
+            if (query->operator_fields.insert_operator.table->table_pos ==
+                query->operator_fields.insert_operator.table->table_length) {
+                    // TODO: memory leak from unfreed query
+                    return "Table is full.";
+            }
+            Table* table = query->operator_fields.insert_operator.table;
+            size_t pos = query->operator_fields.insert_operator.table->table_pos;
+            for (size_t i = 0; i < query->operator_fields.insert_operator.table->col_count; i++) {
+                table->columns[i].data[pos] = query->operator_fields.insert_operator.values[i];
+            }
+            query->operator_fields.insert_operator.table->table_pos++;
+            break;
+        
+        case LOAD:
+            break;
+
         default:
             break;
     }

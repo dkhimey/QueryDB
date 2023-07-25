@@ -70,7 +70,8 @@ typedef struct Column {
  * name, the name associated with the table. table names must be unique
  *     within a database, but tables from different databases can have the same
  *     name.
- * - col_count, the number of columns in the table
+ * - col_count, the number of columns currenty in the table
+ * - col capacity, the maximum number of columns the table can hold
  * - columns this is the pointer to an array of columns contained in the table.
  * - table_length, the size of the columns in the table.
  **/
@@ -79,6 +80,8 @@ typedef struct Table {
     char name [MAX_SIZE_NAME];
     Column *columns;
     size_t col_count;
+    size_t col_capacity;
+    size_t table_pos; // position of last value in the table
     size_t table_length;
 } Table;
 
