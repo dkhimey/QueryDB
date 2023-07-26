@@ -30,6 +30,13 @@
 
 #define DEFAULT_QUERY_BUFFER_SIZE 1024
 
+int execute_load() {
+    // while loop collects all packets
+
+    // iterate and fill table with values
+    return 0;
+}
+
 /** execute_DbOperator takes as input the DbOperator and executes the query.
  * This should be replaced in your implementation (and its implementation possibly moved to a different file).
  * It is currently here so that you can verify that your server and client can send messages.
@@ -105,6 +112,11 @@ char* execute_DbOperator(DbOperator* query) {
             break;
         
         case LOAD:
+            // int status = execute_load();
+            // if (status != 0) {
+            //     // TODO: memory leak from unfreed query
+            //     return "Failed to load file.";
+            // }
             break;
 
         default:

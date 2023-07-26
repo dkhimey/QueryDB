@@ -118,6 +118,46 @@ int main(void)
                 exit(1);
             }
 
+            if (strncmp(send_message.payload, "load", 4) == 0) {
+                char* file_name = send_message.payload + 4;
+                file_name = trim_parenthesis(file_name);
+                file_name = trim_quotes(file_name);
+                file_name = trim_whitespace(file_name);
+                printf("filename: %s\n", file_name);
+                FILE *fp = fopen(file_name, "r");
+                if (fp == NULL) {
+                    printf("File doesn't exist.\n");
+                    // TODO: send cancel load message to client
+                } else {
+                    // send file contents
+                    char buffer[4096];
+                    char *input;
+                    size_t cur_len = 0;
+                    while (fgets(buffer, sizeof(buffer), fp) != 0) {
+                        size_t buf_len = strlen(buffer);
+                        char *extra = realloc(input, buf_len + cur_len + 1);
+                        if (extra == 0)
+                            break;
+                        input = extra;
+                        strcpy(input + cur_len, buffer);
+                        cur_len += buf_len;
+                    }
+                    // send input to client
+                    send_message.payload = input;
+                    send_message.status = 0;
+                    send_message.length = strlen(read_buffer);
+                    if (send(client_socket, &(send_message), sizeof(message), 0) == -1) {
+                        log_err("Failed to file load header.");
+                        exit(1);
+                    }
+                    if (send(client_socket, send_message.payload, send_message.length, 0) == -1) {
+                        log_err("Failed to send file payload.");
+                        exit(1);
+                    }
+                    free(input);
+                }
+            }
+
             // Always wait for server response (even if it is just an OK message)
             if ((len = recv(client_socket, &(recv_message), sizeof(message), 0)) > 0) {
                 if ((recv_message.status == OK_WAIT_FOR_RESPONSE || recv_message.status == OK_DONE) &&

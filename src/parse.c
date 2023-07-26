@@ -32,6 +32,29 @@ char* next_token(char** tokenizer, message_status* status) {
     return token;
 }
 
+
+DbOperator* parse_load(char* query_command, message* send_message) {
+    if (strncmp(query_command, "(", 1) == 0) {
+        query_command++;
+        char** command_index = &query_command;
+        char* file_name = next_token(command_index, &send_message->status);
+        file_name = trim_quotes(file_name);
+        if (send_message->status == INCORRECT_FORMAT) {
+            return NULL;
+        }
+        // make load operator.
+        DbOperator* dbo = malloc(sizeof(DbOperator));
+        dbo->type = LOAD;
+        dbo->operator_fields.load_operator.file_name = file_name;
+        // TODO: not even sure we need the filename here
+        return dbo;
+    } else {
+        send_message->status = UNKNOWN_COMMAND;
+        return NULL;
+    }
+}
+
+
 /**
  * This method takes in a string representing the arguments to create a table.
  * It parses those arguments, checks that they are valid, and creates a table.
@@ -230,7 +253,7 @@ DbOperator* parse_command(char* query_command, message* send_message, int client
         handle = NULL;
     }
 
-    cs165_log(stdout, "QUERY: %s\n", query_command);
+    // cs165_log(stdout, "QUERY: %s\n", query_command);
 
     // by default, set the status to acknowledge receipt of command,
     //   indication to client to now wait for the response from the server.
@@ -250,6 +273,9 @@ DbOperator* parse_command(char* query_command, message* send_message, int client
     } else if (strncmp(query_command, "relational_insert", 17) == 0) {
         query_command += 17;
         dbo = parse_insert(query_command, send_message);
+    } else if (strncmp(query_command, "load", 4) == 0) {
+        query_command += 4;
+        dbo = parse_load(query_command, send_message);
     }
     if (dbo == NULL) {
         return dbo;
